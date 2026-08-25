@@ -13,6 +13,7 @@ dependencies = [
 
 [project.scripts]
 get-arxiv-papers = "research_tools.arxiv_papers:main"
+create-python-project = "research_tools.python_project:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/research_tools"]
