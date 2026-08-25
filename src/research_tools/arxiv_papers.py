@@ -1,9 +1,7 @@
-#!/usr/bin/env python3
 """
 Download arXiv PDFs listed in a CSV file and bundle them into a zip archive.
 
-Usage:  python get_arvix_papers.py refs.csv [--out-dir DIR] [--zip-name NAME]
-Requires: requests  (pip install requests)
+Usage:  get-arxiv-papers refs.csv [--out-dir DIR] [--zip-name NAME]
 
 The CSV file must have a header row with columns `arxiv_id,title`. Each row's
 `title` is slugified into the output PDF's filename (falling back to the

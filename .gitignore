@@ -1,3 +1,9 @@
 *.pdf
 *.zip
 projects
+
+__pycache__/
+*.egg-info/
+.venv/
+build/
+dist/

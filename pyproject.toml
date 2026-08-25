@@ -1,0 +1,18 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "research-tools"
+version = "0.1.0"
+description = "Personal CLI tools for research workflows"
+requires-python = ">=3.10"
+dependencies = [
+    "requests>=2.31",
+]
+
+[project.scripts]
+get-arxiv-papers = "research_tools.arxiv_papers:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/research_tools"]
