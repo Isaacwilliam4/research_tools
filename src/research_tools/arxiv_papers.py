@@ -2,11 +2,15 @@
 Download arXiv PDFs listed in a CSV file and bundle them into a zip archive.
 
 Usage:  get-arxiv-papers refs.csv [--out-dir DIR] [--zip-name NAME]
+        get-arxiv-papers --ids ID1,ID2,... [--out-dir DIR]
 
 The CSV file must have a header row with columns `arxiv_id,title`. Each row's
 `title` is slugified into the output PDF's filename (falling back to the
 sanitized arXiv ID if the title is blank). By default, PDFs are saved to an
 `arxiv_papers/` directory created next to the CSV file.
+
+If --ids is given instead, the CSV is ignored and the listed arXiv IDs are
+downloaded directly into the output directory (no zip is produced).
 """
 
 import argparse
@@ -55,17 +59,33 @@ def download_pdf(arxiv_id: str, dest: Path) -> bool:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Download arXiv PDFs listed in a CSV file.")
-    parser.add_argument("csv_path", type=Path, help="CSV file with arxiv_id,title columns")
+    parser.add_argument("csv_path", type=Path, nargs="?", default=None,
+                         help="CSV file with arxiv_id,title columns")
+    parser.add_argument(
+        "--ids", default=None, metavar="ID1,ID2,...",
+        help="comma-separated arXiv IDs to download directly, ignoring the CSV file",
+    )
     parser.add_argument(
         "--out-dir", type=Path, default=None,
-        help=f"directory to save PDFs (default: {OUT_DIR_NAME}/ next to the CSV file)",
+        help=f"directory to save PDFs (default: {OUT_DIR_NAME}/ next to the CSV file, "
+             f"or ./{OUT_DIR_NAME}/ when using --ids)",
     )
     parser.add_argument("--zip-name", type=Path, default=ZIP_NAME, help="output zip filename")
     args = parser.parse_args()
 
-    out_dir = args.out_dir or args.csv_path.resolve().parent / OUT_DIR_NAME
-    out_dir.mkdir(parents=True, exist_ok=True)
-    refs = read_refs(args.csv_path)
+    if not args.ids and not args.csv_path:
+        parser.error("either csv_path or --ids is required")
+
+    if args.ids:
+        out_dir = args.out_dir or Path.cwd() / OUT_DIR_NAME
+        out_dir.mkdir(parents=True, exist_ok=True)
+        ids = [i.strip() for i in args.ids.split(",") if i.strip()]
+        refs = [(arxiv_id.replace("/", "_"), arxiv_id) for arxiv_id in ids]
+    else:
+        out_dir = args.out_dir or args.csv_path.resolve().parent / OUT_DIR_NAME
+        out_dir.mkdir(parents=True, exist_ok=True)
+        refs = read_refs(args.csv_path)
+
     ok, skipped = [], []
 
     for name, arxiv_id in refs:
@@ -83,11 +103,14 @@ def main() -> None:
             skipped.append(name)
         time.sleep(3)
 
-    with zipfile.ZipFile(args.zip_name, "w", zipfile.ZIP_DEFLATED) as zf:
-        for pdf in sorted(out_dir.glob("*.pdf")):
-            zf.write(pdf, pdf.name)
+    if args.ids:
+        print(f"\nDone: {len(ok)} PDFs saved to {out_dir}; {len(skipped)} skipped.")
+    else:
+        with zipfile.ZipFile(args.zip_name, "w", zipfile.ZIP_DEFLATED) as zf:
+            for pdf in sorted(out_dir.glob("*.pdf")):
+                zf.write(pdf, pdf.name)
+        print(f"\nDone: {len(ok)} PDFs zipped into {args.zip_name}; {len(skipped)} skipped.")
 
-    print(f"\nDone: {len(ok)} PDFs zipped into {args.zip_name}; {len(skipped)} skipped.")
     if skipped:
         print("Skipped (likely not on arXiv):")
         for name in skipped:
