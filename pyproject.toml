@@ -9,11 +9,16 @@ description = "Personal CLI tools for research workflows"
 requires-python = ">=3.10"
 dependencies = [
     "requests>=2.31",
+    "rmc>=0.3",
+    "svglib>=1.5",
+    "reportlab>=4.0",
+    "pypdf>=4.0",
 ]
 
 [project.scripts]
 get-arxiv-papers = "research_tools.arxiv_papers:main"
 create-python-project = "research_tools.python_project:main"
+import-remarkable = "research_tools.remarkable_import:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/research_tools"]
