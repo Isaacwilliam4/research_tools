@@ -17,6 +17,7 @@ dependencies = [
 
 [project.scripts]
 get-arxiv-papers = "research_tools.arxiv_papers:main"
+get-arxiv-bibtex = "research_tools.arxiv_bibtex:main"
 create-python-project = "research_tools.python_project:main"
 import-remarkable = "research_tools.remarkable_import:main"
 
